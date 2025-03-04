@@ -1,4 +1,4 @@
-import { Connection, Keypair, VersionedTransaction, TransactionInstruction, PublicKey, AddressLookupTableAccount, TransactionMessage } from '@solana/web3.js';
+import { Connection, Keypair, VersionedTransaction, TransactionInstruction, PublicKey, AddressLookupTableAccount, TransactionMessage, ComputeBudgetProgram } from '@solana/web3.js';
 import { Wallet } from '@coral-xyz/anchor';
 import bs58 from 'bs58';
 import fetch from 'cross-fetch';
@@ -6,15 +6,15 @@ import dotenv from 'dotenv';
 
 require('dotenv').config();
 (async () => {
-    const connection = new Connection("https://restless-floral-snow.solana-mainnet.quiknode.pro/b6bb6a0c6f46c517ae3f6b50c8e486c0b04f729d", "confirmed");
-
+    const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=5dec48fb-af4a-4f69-8763-ca196750f8d1", "processed");
+    //https://mainnet.helius-rpc.com/?api-key=5dec48fb-af4a-4f69-8763-ca196750f8d1
     const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
 
     console.log(wallet.publicKey.toBase58());
     
     const inputMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
     const outputMint = "So11111111111111111111111111111111111111112";
-    const amount = 100000; //0.1 USDC
+    const amount = 1000000; //0.1 USDC
     const slippageBps = 100; //1%
     const restrictIntermediateTokens = true; //직접 스왑
 
@@ -98,10 +98,17 @@ require('dotenv').config();
     );
     
     const blockhash = (await connection.getLatestBlockhash()).blockhash;
+    
+    // Priority fee 설정 (예: 1,000,000 lamports = 0.001 SOL)
+    const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 1000000
+    });
+
     const messageV0 = new TransactionMessage({
         payerKey: wallet.publicKey,
         recentBlockhash: blockhash,
         instructions: [
+            priorityFeeInstruction, // Priority fee 인스트럭션 추가
             ...(setupInstructions?.map(deserializeInstruction) || []),
             ...(computeBudgetInstructions?.map(deserializeInstruction) || []),
             deserializeInstruction(swapInstructionPayload),

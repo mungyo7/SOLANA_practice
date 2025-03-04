@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 
 require('dotenv').config();
 (async () => {
-    const connection = new Connection("https://restless-floral-snow.solana-mainnet.quiknode.pro/b6bb6a0c6f46c517ae3f6b50c8e486c0b04f729d", "confirmed");
+    const connection = new Connection("https://restless-floral-snow.solana-mainnet.quiknode.pro/b6bb6a0c6f46c517ae3f6b50c8e486c0b04f729d", "processed");
 
     const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
 
@@ -49,7 +49,7 @@ require('dotenv').config();
             dynamicSlippage: true,
             prioritizationFeeLamports: {
                   priorityLevelWithMaxLamports: {
-                    maxLamports: 1000000,
+                    maxLamports: 5000000,
                     priorityLevel: "veryHigh"
                   }
                 }
@@ -69,7 +69,7 @@ require('dotenv').config();
         console.log(transactionBinary);
 
         const signature = await connection.sendRawTransaction(transactionBinary, {
-            maxRetries: 5,
+            maxRetries: 3,
             skipPreflight: true
         });
         console.log(`Transaction Processing: https://solscan.io/tx/${signature}/`);
